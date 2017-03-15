@@ -1,0 +1,83 @@
+DDOC =  
+<!DOCTYPE html>
+<html>
+<head>
+	<title>$(TITLE)</title>
+	<link rel="stylesheet" type="text/css" href="ddoc/style.css">
+	<link rel="stylesheet" href="ddoc/jstree/dist/themes/default/style.min.css" />
+	<script src="ddoc/jquery.js" type="text/javascript"></script>
+	<script src="ddoc/jstree/dist/jstree.js"></script>
+</head>
+<body>
+	<div id="explorer" class="tree">
+		$(TREE)
+	</div>
+
+	<div class="documentation">
+		<h1>$(TITLE)</h1>
+		$(BODY)
+	</div>
+
+	<script type="text/javascript">
+		$('#explorer')
+		  	.on(
+		  		'changed.jstree', function (e, data) 
+		  		{
+		  			if(data.action == 'select_node')
+		  			{
+		  				if(data.node.children_d == 0)
+		  				{
+		  					console.log(data.node.text);
+		  					document.location.href = data.node.text + '.html';
+		  				}
+		  				else
+		  				{
+		  					$.jstree.reference('#explorer').toggle_node(data.node);
+		  				}
+
+						$.jstree.reference('#explorer').deselect_all(false);
+		  			}
+		  		})
+		  	.jstree(
+		  		{
+					"core" : 
+					{
+					},
+
+					"plugins" : 
+					[
+					    "state", "types"
+					]
+				});
+	</script>
+</body>
+</html>
+
+U = $0
+
+CU = <u>$0</u>
+
+REF2 = <a class="ref" href="$0.html">$0</a>
+
+CALIB_ABSTRACT = $(REF2 caLib_abstract)
+
+LATTICE = $(REF2 lattice)
+
+NEIGHBOURHOOD = $(REF2 neighbourhood)
+
+PALETTE = $(REF2 palette)
+
+RENDERER = $(REF2 renderer)
+
+RULE = $(REF2 rule)
+
+CALIB_ABSTRACT_DESC =
+This module is inspired heavily by the use of compile-time duck typing as
+seen in phobos's
+$(LINK2 https://github.com/dlang/phobos/blob/master/std/range/package.d,
+std.range) and in Vladimir Panteleev's article on
+$(LINK2 https://blog.thecybershadow.net/2014/03/21/functional-image-processing-in-d/,
+"Functional image processing in D").
+$(DDOC_BLANKLINE)
+For more information about the diferent parts of a cellular automaton see
+$(CALIB_ABSTRACT).

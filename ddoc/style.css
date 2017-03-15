@@ -1,0 +1,117 @@
+body 
+{
+	/* default font */
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 10pt;
+	color: #000000;
+	
+	background-color: /*#8093F1*/ #FFFFFF;
+	
+	/* Don't touch. Necessary for IE6 and earlier. */
+	height: 100%;	
+}
+
+/* Style for div that actualy contains documenation. */
+#content
+{
+	padding-right: 8px;
+	position: absolute;
+	left: 245px;
+	top: 8px;
+	text-align: justify;
+}
+
+div.documentation {
+	display: inline-block;
+	max-width: 900px;
+	/*background-color: #B388EB;*/
+	padding: 8px;
+}
+
+div.tree {
+	display: inline-block;
+	min-width: 270px;
+	/*background-color: #ff9191;*/
+	padding: 8px;
+	margin-right: 10px;
+	float: left;
+}
+
+
+/* Style appled to declarations. E.g. 'void foo(int a, float b);' */
+span.decl { font-size: 10pt; font-weight: bold; color: #000000; text-align: left }
+/* Style appled to current declaration's symbol. E.g. 'foo' in 'void foo(int a, float b);' */
+span.currsymbol { font-size: 12pt; color: #009900 }
+/* Style appled to function's parameters. E.g. 'a' and 'b' in 'void foo(int a, float b);' */
+span.funcparam  { font-style: italic; font-weight: normal; color: #331200 }
+
+/* style applied to preformated text used to show examples. */
+pre.d_code
+{
+	display: inline-block;
+    padding: 10px 20px 10px 20px;
+	background-color: #E7DFDD;
+}
+
+/* style applied to preformated text used to show inline code. */
+pre.d_inline_code
+{
+	display: inline-block;
+    padding: -1px 2px -1px 2px;
+	background-color: #E7DFDD;
+}
+
+
+/* hyperlinks */
+a:link {  color: #2e56f1; text-decoration: none }
+a:visited {  color: #2e56f1; text-decoration: none }
+a:hover {  color: #2e56f1; text-decoration: none }
+a:active {  color: #2e56f1; text-decoration: none }
+
+/* references to other code */
+a:link.ref {  color: #000000; text-decoration: underline; }
+a:visited.ref {  color: #000000; text-decoration: underline }
+a:hover.ref {  color: #000000; text-decoration: underline }
+a:active.ref {  color: #000000; text-decoration: underline }
+
+
+
+/*
+* filetree
+*/
+
+ul.tree li {
+    list-style-type: none;
+    position: relative;
+}
+
+ul.tree li ul {
+    display: none;
+}
+
+ul.tree li.open > ul {
+    display: block;
+}
+
+ul.tree li a {
+    color: black;
+    text-decoration: none;
+}
+
+ul.tree li a:before {
+    height: 1em;
+    padding:0 .1em;
+    font-size: .8em;
+    display: block;
+    position: absolute;
+    left: -1.3em;
+    top: .2em;
+}
+
+ul.tree li > a:not(:last-child):before {
+    content: '+';
+}
+
+ul.tree li.open > a:not(:last-child):before {
+    content: '-';
+}
