@@ -3,6 +3,7 @@ docs.json
 __dummy.html
 ddoc
 docs
+app.d
 *.o
 *.obj
 *.exe
