@@ -8,6 +8,9 @@ import caLib_abstract.lattice : isAnyLattice;
 import caLib_abstract.neighbourhood : isStaticNeighbourhood;
 
 
+import std.stdio;
+
+
 
 auto create_TotalisticRule(Lt)(Lt* lattice, BigInt ruleNumber)
 {
@@ -27,7 +30,7 @@ body
 
 
 struct TotalisticRule(Lt)
-if(isAnyLattice!Lt && Lt.Dimension == 2 && is(Lt.CellStateType == ubyte)
+if(isAnyLattice!Lt && Lt.Dimension == 2 && is(Lt.CellStateType : ubyte)
 && isStaticNeighbourhood!(Lt.NeighbourhoodType, 2) && Lt.NeighbourhoodType.NeighboursAmount+1 < uint.max)
 {
 
@@ -45,7 +48,7 @@ public:
 
 	this(Lt* lattice, BigInt ruleNumber)
 	in
-	{ assert(ruleNumber <= maxRuleNumber); }
+	{ assert(ruleNumber <= calculateMaxRuleNumber); }
 	body
 	{
 		this(lattice, createRuleSetFromNumber(ruleNumber));
@@ -63,11 +66,7 @@ public:
 		this.ruleSet = ruleSet;
 		this.ruleNumber = createNumberFromRuleSet(ruleSet);
 
-		maxRuleNumber = (){
-			BigInt n = BigInt("1");
-			foreach(i; 0 .. configurations) { n *= 2; }
-			return n-1;
-		}();
+		maxRuleNumber = calculateMaxRuleNumber();
 	}
 
 
@@ -108,11 +107,11 @@ private:
 	{
 		string binaryRuleString = toBinaryString(ruleNumber);
 
-		ubyte[] ruleSet;
+		ubyte[] ruleSet = new ubyte[TotalisticRule!Lt.configurations];
 		foreach(i; 0 .. binaryRuleString.length)
 		{
 			ruleSet[i] = to!ubyte(
-				binaryRuleString[binaryRuleString.length-i-1] - '0');
+				binaryRuleString[binaryRuleString.length-1-i] - '0');
 		}
 
 		return ruleSet;
@@ -141,6 +140,15 @@ private:
 			}
 		}
 		return n;
+	}
+
+
+
+	private static BigInt calculateMaxRuleNumber()
+	{
+		BigInt n = BigInt("1");
+		foreach(i; 0 .. configurations) { n *= 2; }
+		return n-1;
 	}
 
 
