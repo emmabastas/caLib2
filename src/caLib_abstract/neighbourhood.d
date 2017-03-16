@@ -119,7 +119,6 @@ unittest
 {
 	static assert( isAnyNeighbourhood!(Neighbourhood!(1)));
     static assert( isAnyNeighbourhood!(StaticNeighbourhood!(2)));
-    static assert( isAnyNeighbourhood!(ShiftingNeighbourhood!(3)));
     static assert(!isAnyNeighbourhood!string);
 }
 
@@ -209,135 +208,7 @@ unittest
 {
 	static assert(!isAnyStaticNeighbourhood!(Neighbourhood!(1)));
     static assert( isAnyStaticNeighbourhood!(StaticNeighbourhood!(2)));
-    static assert(!isAnyStaticNeighbourhood!(ShiftingNeighbourhood!(3)));
     static assert(!isAnyStaticNeighbourhood!string);
-}
-
-
-
-/**
-* Tests if something is a $(B ShiftingNeighbourhood).
-*
-* returns `true` if `T` is a $(B ShiftingNeighbourhood) of dimension `N`.
-*
-* A $(B ShiftingNeighbourhood) is a $(NEIGHBOURHOOD) that can change each
-* generation. It's `shift` function is meant to be called by the $(I ca)'s
-* $(LATTICE) every time a generation changes.
-*
-* A $(B ShiftingNeighbourhood) is a $(B neighbourhood) with the additional
-* primitive `void shift()`
-*
-* Params:
-*     T  = type to be tested
-*     N  = number of dimensions
-*
-* Returns: true if T is a $(B ShiftingNeighbourhood), false if not
-*/
-template isShiftingNeighbourhood(T, uint N)
-{
-	enum isShiftingNeighbourhood = 
-		isNeighbourhood!(T, N) &&
-		is(typeof(T.init.shift()) : void);
-}
-
-///
-unittest
-{
-	struct Foo {
-		enum uint Dimension = 2;
-
-		private bool state = false;
-
-		int[2][] getNeighboursCoordinates(int x, int y) {
-			if(state) {
-				return [[x+1, y+1]];
-			} else {
-				return [[x-1, y-1]];
-			}
-		}
-
-		void shift() { state = !state; }
-	}
-
-	static assert( isNeighbourhood!(Foo, 2));
-	static assert( isShiftingNeighbourhood!(Foo, 2));
-	static assert(!isShiftingNeighbourhood!(string, 1));
-}
-
-unittest
-{
-	static assert( isShiftingNeighbourhood!(ShiftingNeighbourhood!(1), 1));
-	static assert( isShiftingNeighbourhood!(ShiftingNeighbourhood!(2), 2));
-	static assert( isShiftingNeighbourhood!(ShiftingNeighbourhood!(3), 3));
-
-	static assert(!isShiftingNeighbourhood!(ShiftingNeighbourhood!(3), 2));
-	static assert(!isShiftingNeighbourhood!(Neighbourhood!(1), 1));
-}
-
-
-
-///$(IS_ANY ShiftingNeighbourhood)
-template isAnyShiftingNeighbourhood(T)
-{
-	static if(hasDimension!T)
-		enum isAnyShiftingNeighbourhood = isShiftingNeighbourhood!(T, T.Dimension);
-	else
-		enum isAnyShiftingNeighbourhood = false;
-}
-
-///
-unittest
-{
-	struct Foo {
-		enum uint Dimension = 2;
-
-		private bool state = false;
-
-		int[2][] getNeighboursCoordinates(int x, int y) {
-			if(state) {
-				return [[x+1, y+1]];
-			} else {
-				return [[x-1, y-1]];
-			}
-		}
-
-		void shift() { state = !state; }
-	}
-
-	static assert(!   isShiftingNeighbourhood!(Foo, 3));
-	static assert( isAnyShiftingNeighbourhood!(Foo   ));
-}
-
-unittest
-{
-	static assert( isAnyShiftingNeighbourhood!(ShiftingNeighbourhood!(1)));
-    static assert( isAnyShiftingNeighbourhood!(ShiftingNeighbourhood!(2)));
-    static assert( isAnyShiftingNeighbourhood!(ShiftingNeighbourhood!(3)));
-    static assert(!isAnyShiftingNeighbourhood!(Neighbourhood!(1)));
-    static assert(!isAnyShiftingNeighbourhood!string);
-}
-
-
-
-/+
-+ This template is undocumented since it is unclear wheater it should exist or not
-+/
-template isBlockNeighbourhood(T, uint N)
-{
-	alias Coord = Repeat!(N, int);
-
-	enum isBlockNeighbourhood =
-		isNeighbourhood!(T, N) &&
-		is(typeof(T.init.getBlockCoordinates(Coord.init)) : int[N][]); 
-}
-
-unittest
-{
-	static assert( isBlockNeighbourhood!(BlockNeighbourhood!(1), 1));
-	static assert( isBlockNeighbourhood!(BlockNeighbourhood!(2), 2));
-	static assert( isBlockNeighbourhood!(BlockNeighbourhood!(3), 3));
-
-	static assert(!isBlockNeighbourhood!(BlockNeighbourhood!(3), 2));
 }
 
 
@@ -359,14 +230,6 @@ version(unittest)
 		alias neighbourhood this;
 
 		enum uint NeighboursAmount = 0;
-	}
-
-	struct ShiftingNeighbourhood(uint N)
-	{
-		Neighbourhood!N neighbourhood;
-		alias neighbourhood this;
-
-		void shift() {}
 	}
 
 	struct BlockNeighbourhood(uint N)

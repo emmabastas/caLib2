@@ -1,6 +1,6 @@
 module caLib.lattices.TwoDimDenseLattice;
 
-import caLib_abstract.neighbourhood : isNeighbourhood, isShiftingNeighbourhood;
+import caLib_abstract.neighbourhood : isNeighbourhood;
 
 import caLib_util.misc : mod;
 
@@ -281,11 +281,6 @@ public:
 
     void nextGen(string behaviour)()
     {
-        static if(isShiftingNeighbourhood!(Nt, 2))
-        {
-            neighbourhood.shift();
-        }
-
         static if(behaviour == "correct")
         {
             Ct[]* tmp = lattice;

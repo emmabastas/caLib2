@@ -112,7 +112,6 @@ unittest
 {
     static assert( isAnyLattice!(Lattice!(char, 1)));
     static assert( isAnyLattice!(BoundedLattice!(float, 2)));
-    static assert( isAnyLattice!(BlockLattice!(int, 3)));
     static assert(!isAnyLattice!string);
 }
 
@@ -173,75 +172,7 @@ unittest
 {
     static assert(!isAnyBoundedLattice!(Lattice!(char, 1)));
     static assert( isAnyBoundedLattice!(BoundedLattice!(float, 2)));
-    static assert(!isAnyBoundedLattice!(BlockLattice!(int, 3)));
     static assert(!isAnyBoundedLattice!string);
-}
-
-
-
-/**
-* Tests if something is a $(B BlockLattice).
-*
-* returns `true` if `T` is a $(B BlockLattice) of $(I dimension) `N`, Storing cells of type `Ct`.
-* 
-* A $(B BlockLattice) is a $(B Lattice) with the additional functions: $(BR)
-* `Ct[] getBlock(string)(Coord)`, `Ct[] getBlock(Coord)`, $(BR)
-* `void setBlock(string)(Coord, Ct[])`, `void setBlock(Coord, Ct[])`, $(BR)
-* `void iterateBlocks(string)(void delegate(Coord position))`, `void iterate(void delegate(Coord position))`, $(BR)
-* Where `Coord` is an alias for a typetuple containing `int`'s, one `int` for each
-* $(I dimension) (in a 3 dimensional $(B BlockLattice) `Coord` would be: `(int, int, int)`).
-*
-* Params:
-*     T  = type to be tested
-*     Ct = type of the cells the $(B BlockLattice) should contain
-*     N  = number of dimensions
-*
-* Returns: true if T is a $(B BlockLattice), false if not
-*/
-template isBlockLattice(T, Ct, uint N)
-{
-    alias Coord = Repeat!(N, int);
-
-    enum isBlockLattice =
-        isLattice!(T, Ct, N) &&
-        is(typeof(T.init.getBlock!""(Coord.init)) : Ct[]) &&
-        is(typeof(T.init.getBlock(Coord.init)) : Ct[]) &&
-        is(typeof(T.init.setBlock!""(Coord.init, Ct[].init)) : void) &&
-        is(typeof(T.init.setBlock(Coord.init, Ct[].init)) : void) &&
-        is(typeof(T.init.iterateBlocks!""((Coord c) {})) : void) &&
-        is(typeof(T.init.iterateBlocks((Coord c) {})) : void);
-}
-
-unittest
-{
-    static assert( isLattice!(BlockLattice!(int, 1), int, 1));
-    static assert( isLattice!(BlockLattice!(int, 2), int, 2));
-    static assert( isLattice!(BlockLattice!(int, 3), int, 3));
-    static assert( isBlockLattice!(BlockLattice!(int, 1), int, 1));
-    static assert( isBlockLattice!(BlockLattice!(int, 2), int, 2));
-    static assert( isBlockLattice!(BlockLattice!(int, 3), int, 3));
-
-    static assert(!isBlockLattice!(BlockLattice!(int, 3), uint, 2));
-    static assert(!isBlockLattice!(BlockLattice!(int, 1), uint, 1));
-}
-
-
-
-///$(IS_ANY BlockLattice)
-template isAnyBlockLattice(T)
-{
-    static if(hasCellStateType!T && hasDimension!T)
-        enum isAnyBlockLattice = isBlockLattice!(T, T.CellStateType, T.Dimension);
-    else
-        enum isAnyBlockLattice = false;
-}
-
-unittest
-{
-    static assert(!isAnyBlockLattice!(Lattice!(char, 1)));
-    static assert(!isAnyBlockLattice!(BoundedLattice!(float, 2)));
-    static assert( isAnyBlockLattice!(BlockLattice!(int, 3)));
-    static assert(!isAnyBlockLattice!string);
 }
 
 
@@ -284,22 +215,5 @@ version(unittest)
             // "uint[N]" is a call to "opIndex"
             uint[N] a; return a.init;
         }
-    }
-
-    struct BlockLattice(Ct, uint N)
-    {
-        alias Coord = Repeat!(N, int);
-
-        Lattice!(Ct, N) lattice;
-        alias lattice this;
-
-        Ct[] getBlock(string behaviour)(Coord){ return new Ct[0]; }
-        Ct[] getBlock()(Coord) { return new Ct[0]; }
-
-        void setBlock(string behaviour)(Coord, Ct[]) {}
-        void setBlock()(Coord, Ct[]) {}
-
-        void iterateBlocks(string s)(void delegate(Coord) d) {}
-        void iterateBlocks()(void delegate(Coord) d) {}
     }
 }
