@@ -1,6 +1,12 @@
 .dub
 docs.json
 __dummy.html
+ddoc
+docs
 *.o
 *.obj
 *.exe
+*.lib
+*.dll
+*.a
+*.so
