@@ -9,6 +9,9 @@ module caLib_abstract.util;
 
 
 
+/**
+* return `true` if `T` has an `alias` named `CellStateType`. `False` if not
+*/
 template hasCellStateType(T)
 {
 	enum hasCellStateType =
@@ -16,6 +19,7 @@ template hasCellStateType(T)
 		is(T.init.CellStateType);
 }
 
+///
 unittest
 {
 	struct Foo {
@@ -23,12 +27,19 @@ unittest
 	}
 
 	static assert( hasCellStateType!Foo);
-	static assert(!hasDimension!string);
+	static assert(!hasCellStateType!string);
 }
 
 
 
-template isCellStateTypesCompatible(T...)
+/**
+* Return true all of the given arguments are types that can be impliciltly
+* converted to one-another
+*
+* It is unclear if it behaves the way it should in all cases and should
+* not be used .
+*/
+deprecated template isCellStateTypesCompatible(T...)
 {
 	static assert(T.length != 0);
 
@@ -46,6 +57,7 @@ template isCellStateTypesCompatible(T...)
 	}
 }
 
+///
 unittest
 {
 	static assert( isCellStateTypesCompatible!(int));
@@ -55,6 +67,9 @@ unittest
 
 
 
+/**
+* return `true` if `T` has an `alias` named `DisplayValueType`. `False` if not
+*/
 template hasDisplayValueType(T)
 {
 	enum hasDisplayValueType =
@@ -62,9 +77,27 @@ template hasDisplayValueType(T)
 		is(T.init.DisplayValueType);
 }
 
+///
+unittest
+{
+	struct Foo {
+		alias DisplayValueType = uint;
+	}
+
+	static assert( hasDisplayValueType!Foo);
+	static assert(!hasDisplayValueType!string);
+}
 
 
-template isDisplayValueTypesCompatible(T...)
+
+/**
+* Return true all of the given arguments are types that can be impliciltly
+* converted to one-another
+*
+* It is unclear if it behaves the way it should in all cases and should
+* not be used .
+*/
+deprecated template isDisplayValueTypesCompatible(T...)
 {
 	static assert(T.length != 0);
 
@@ -82,6 +115,7 @@ template isDisplayValueTypesCompatible(T...)
 	}
 }
 
+///
 unittest
 {
 	static assert( isCellStateTypesCompatible!(int));
@@ -91,6 +125,9 @@ unittest
 
 
 
+/**
+* return `true` if `T` has an `enum uint` named `Dimension`. `False` if not
+*/
 template hasDimension(T)
 {
 	enum hasDimension =
@@ -98,6 +135,7 @@ template hasDimension(T)
 		is(typeof(T.init.Dimension) : int);
 }
 
+///
 unittest
 {
 	struct Foo {
@@ -110,7 +148,14 @@ unittest
 
 
 
-template isDimensionsCompatible(T...)
+/**
+* Return true all of the given arguments are types that can be impliciltly
+* converted to one-another
+*
+* It is unclear if it behaves the way it should in all cases and should
+* not be used .
+*/
+deprecated template isDimensionsCompatible(T...)
 {
 	static assert(T.length != 0);
 
@@ -129,6 +174,7 @@ template isDimensionsCompatible(T...)
 	}
 }
 
+///
 unittest
 {
 	static assert( isDimensionsCompatible!(0));
@@ -139,6 +185,13 @@ unittest
 
 
 
+/**
+* return `true` if `T` has an `alias` named `NeighbourhoodType`. `False` if not
+*
+* return `true` if `T` has an `alias` named `NeighbourhoodType`. `False` if not.
+* $(B Note) that `NeighbourhoodType` need not actually be a neighbourhood.
+* It can be any type
+*/
 template hasNeighbourhoodType(T)
 {
 	enum hasNeighbourhoodType =
@@ -146,7 +199,13 @@ template hasNeighbourhoodType(T)
 		is(T.init.NeighbourhoodType);
 }
 
+///
 unittest
 {
-	pragma(msg, "no unittest for template hasNeighbourhood in util.d");
+	struct Foo {
+		alias NeighbourhoodType = char; //car is is not a neighbourhood
+	}
+
+	static assert( hasNeighbourhoodType!Foo); //but this return true anyways
+	static assert(!hasNeighbourhoodType!int);
 }
