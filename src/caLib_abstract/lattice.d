@@ -181,10 +181,11 @@ version(unittest)
 {
     import caLib_abstract.neighbourhood : Neighbourhood;
 
-    struct Lattice(Ct, uint N)
+    struct Lattice(Ct, uint N, neighbourhood=Neighbourhood!N)
+    if(isNeighbourhood!(neighbourhood, N))
     {
         alias CellStateType = Ct;
-        alias NeighbourhoodType = Neighbourhood!Dimension;
+        alias NeighbourhoodType = neighbourhood;
         enum uint Dimension = N;
 
         alias Coord = Repeat!(N, int);
