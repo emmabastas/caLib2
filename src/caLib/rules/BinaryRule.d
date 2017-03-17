@@ -1,4 +1,4 @@
-module caLib.rules.TotalisticRule;
+module caLib.rules.BinaryRule;
 
 import std.math : pow;
 import std.bigint;
@@ -8,28 +8,25 @@ import caLib_abstract.lattice : isAnyLattice;
 import caLib_abstract.neighbourhood : isStaticNeighbourhood;
 
 
-import std.stdio;
 
-
-
-auto create_TotalisticRule(Lt)(Lt* lattice, BigInt ruleNumber)
+auto create_BinaryRule(Lt)(Lt* lattice, BigInt ruleNumber)
 {
-	return new TotalisticRule!Lt(lattice, ruleNumber);
+	return new BinaryRule!Lt(lattice, ruleNumber);
 }
 
 
 
-auto create_TotalisticRule(Lt)(Lt* lattice, ubyte[] ruleSet)
+auto create_BinaryRule(Lt)(Lt* lattice, ubyte[] ruleSet)
 in
-{ assert(TotalisticRule!Lt.configurations == ruleSet.length); }
+{ assert(BinaryRule!Lt.configurations == ruleSet.length); }
 body
 {
-	return new TotalisticRule!Lt(lattice, ruleSet);
+	return new BinaryRule!Lt(lattice, ruleSet);
 }
 
 
 
-struct TotalisticRule(Lt)
+struct BinaryRule(Lt)
 if(isAnyLattice!Lt && Lt.Dimension == 2 && is(Lt.CellStateType : ubyte)
 && isStaticNeighbourhood!(Lt.NeighbourhoodType, 2) && Lt.NeighbourhoodType.NeighboursAmount+1 < uint.max)
 {
@@ -58,7 +55,7 @@ public:
 
 	this(Lt* lattice, ubyte[] ruleSet)
 	in
-	{ assert(TotalisticRule!Lt.configurations == ruleSet.length); }
+	{ assert(BinaryRule!Lt.configurations == ruleSet.length); }
 	body
 	{
 		this.lattice = lattice;
@@ -101,13 +98,13 @@ private:
 	private static  ubyte[] createRuleSetFromNumber(BigInt ruleNumber)
 	out(result)
 	{
-		assert(TotalisticRule!Lt.configurations == result.length);
+		assert(BinaryRule!Lt.configurations == result.length);
 	}
 	body
 	{
 		string binaryRuleString = toBinaryString(ruleNumber);
 
-		ubyte[] ruleSet = new ubyte[TotalisticRule!Lt.configurations];
+		ubyte[] ruleSet = new ubyte[BinaryRule!Lt.configurations];
 		foreach(i; 0 .. binaryRuleString.length)
 		{
 			ruleSet[i] = to!ubyte(
@@ -122,7 +119,7 @@ private:
 	private static BigInt createNumberFromRuleSet(const ubyte[] ruleSet)
 	in
 	{
-		assert(TotalisticRule!Lt.configurations == ruleSet.length);
+		assert(BinaryRule!Lt.configurations == ruleSet.length);
 	}
 	body
 	{
@@ -182,4 +179,19 @@ private:
 		assert(bin != null);
 		return bin;
 	}
+}
+
+
+
+version(unittest)
+{
+	import caLib_abstract.rule : isRule;
+	import caLib_abstract.lattice : Lattice;
+	import caLib_abstract.neighbourhood : StaticNeighbourhood;
+}
+
+unittest
+{
+	alias lattice = Lattice!(ubyte, 2, StaticNeighbourhood!2);
+	static assert(isRule!(BinaryRule!lattice));
 }
