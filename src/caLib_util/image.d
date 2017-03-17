@@ -1,7 +1,7 @@
 module caLib_util.image;
 
 import std.exception : Exception, enforce;
-import std.file : thisExePath, dirName;
+import std.file : thisExePath;
 import std.stdio : writeln;
 import std.conv : to;
 import std.string : split;
