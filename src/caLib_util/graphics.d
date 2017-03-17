@@ -8,7 +8,7 @@
 module caLib_util.graphics;
 
 import std.stdio : writeln;
-import std.file : dirName, thisExePath;
+import std.file : thisExePath;
 import std.exception : enforce;
 import std.conv : to;
 import caLib_util.build : arch, os;
