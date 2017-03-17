@@ -59,13 +59,9 @@ string withDynamiclyLinkedExstention(string fileName)
 	{
 		return fileName ~ ".so";
 	}
-	else static if(os == "OSX")
+	else
 	{
 		pragma(msg, "caLib_util.misc :  withDynamiclyLinkedExstention\nSupport for " ~ os ~ "is not implemented");
 		return null;
-	}
-	else
-	{
-		static assert(0, "Support for " ~ os ~ "is not implemented");
 	}
 }
