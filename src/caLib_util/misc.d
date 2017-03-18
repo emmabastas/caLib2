@@ -32,35 +32,3 @@ string findInPATH(string fileName)
 
 	return filePath; 
 }
-
-
-
-string withExecutableBinaryExstention(string fileName)
-{
-	static if(os == "Windows")
-	{
-		return fileName ~ ".exe";
-	}
-	else
-	{
-		return fileName;
-	}
-}
-
-
-
-string withDynamiclyLinkedExstention(string fileName)
-{
-	static if(os == "Windows")
-	{
-		return fileName ~ ".dll";
-	}
-	else static if(os == "Linux")
-	{
-		return fileName ~ ".so";
-	}
-	else
-	{
-		static assert(0, "Suppoert for " ~ os ~ "is not implemented");
-	}
-}
