@@ -145,28 +145,12 @@ static this()
 		"Windows" : "ffmpeg.exe",
 	].get(os, null);
 
-	if(decoderName != null)
-	{
-		pragma(msg, "caLib_util.Video can't be used becuase codec usage is not yet"
-        		~ " implemented for " ~ os);
-		decorderPath = null;
-	}
-	else
-	{
-		decoderPath = findInPATH(decoderName);
-	}
-	
-	
-	if(encoderName != null)
-	{
-		pragma(msg, "caLib_util.Video can't be used becuase codec usage is not yet"
-        		~ " implemented for " ~ os);
-		encoderPath = null;
-	}
-	else
-	{
-		encoderPath = findInPATH(encoderName);
-	}
+	static assert(decoderName != null && encoderName != null,
+        "can't compile video.d becuase codec usage is not yet"
+        ~ " implemented for " ~ os);
+
+	decoderPath = findInPATH(decoderName);
+	encoderPath = findInPATH(encoderName);
 
 	enforce(decoderPath != null && encoderPath != null,
 		encoderName ~ " and/or " ~ decoderName ~ ", wich is "
