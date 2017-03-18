@@ -93,9 +93,18 @@ public:
 
 
 
+	static BigInt calculateMaxRuleNumber()
+	{
+		BigInt n = BigInt("1");
+		foreach(i; 0 .. configurations) { n *= 2; }
+		return n-1;
+	}
+
+
+
 private:
 
-	private static  ubyte[] createRuleSetFromNumber(BigInt ruleNumber)
+	static  ubyte[] createRuleSetFromNumber(BigInt ruleNumber)
 	out(result)
 	{
 		assert(BinaryRule!Lt.configurations == result.length);
@@ -116,7 +125,7 @@ private:
 
 
 
-	private static BigInt createNumberFromRuleSet(const ubyte[] ruleSet)
+	static BigInt createNumberFromRuleSet(const ubyte[] ruleSet)
 	in
 	{
 		assert(BinaryRule!Lt.configurations == ruleSet.length);
@@ -141,16 +150,7 @@ private:
 
 
 
-	private static BigInt calculateMaxRuleNumber()
-	{
-		BigInt n = BigInt("1");
-		foreach(i; 0 .. configurations) { n *= 2; }
-		return n-1;
-	}
-
-
-
-	private static string toBinaryString(const BigInt num)
+	static string toBinaryString(const BigInt num)
 	{
 		string hex = num.toHex();
 		auto bin = appender!string();
@@ -166,7 +166,7 @@ private:
 
 
 
-	private static string hexToBinary(char hex)
+	static string hexToBinary(char hex)
 	{
 		string bin =
 		[
