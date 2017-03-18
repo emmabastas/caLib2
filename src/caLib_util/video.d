@@ -1,7 +1,8 @@
 module caLib_util.video;
 
 import std.process : execute, executeShell;
-import std.file : mkdirRecurse, rmdir, remove, exists, write, rename, getcwd;
+import std.file : mkdirRecurse, rmdir, remove, exists, write, rename, getcwd, thisExePath;
+import std.path : buildPath;
 import std.exception : enforce;
 import std.conv : to;
 import std.string : split;
@@ -149,8 +150,19 @@ static this()
         "can't compile video.d becuase codec usage is not yet"
         ~ " implemented for " ~ os);
 
-	decoderPath = findInPATH(decoderName);
-	encoderPath = findInPATH(encoderName);
+	if(exists(buildPath(thisExePath(), decoderName)))
+		decoderPath = buildPath(thisExePath(), decoderName);
+	else if(exists(buildPath(getcwd(), decoderName)))
+		decoderPath = buildPath(getcwd(), decoderName);
+	else
+		decoderPath = findInPATH(decoderName);
+
+	if(exists(buildPath(thisExePath(), encoderName)))
+		encoderPath = buildPath(thisExePath(), encoderName);
+	else if(exists(buildPath(getcwd(), encoderName)))
+		encoderPath = buildPath(getcwd(), encoderName);
+	else
+		encoderPath = findInPATH(decoderName);
 
 	enforce(decoderPath != null && encoderPath != null,
 		encoderName ~ " and/or " ~ decoderName ~ ", wich is "
