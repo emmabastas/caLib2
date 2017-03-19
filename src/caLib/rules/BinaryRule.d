@@ -68,7 +68,7 @@ public:
 
 
 
-	void applyRule()
+	/*void applyRule()
 	{
 		lattice.iterate((int x, int y)
 		{
@@ -81,6 +81,24 @@ public:
 			}
 
 			lattice.set(x, y, ruleSet[n]);
+		});
+
+		lattice.nextGen();
+	}*/
+
+
+
+	void applyRule()
+	{
+		lattice.iterate((ubyte cellState, ubyte[] neighbours, int x, int y)
+		{
+			uint n = cellState << neighbours.length;
+			foreach(i; 0 .. neighbours.length)
+			{
+				n += neighbours[i] << i;
+			}
+
+			return ruleSet[n];
 		});
 
 		lattice.nextGen();
