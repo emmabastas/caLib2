@@ -1,10 +1,10 @@
 module caLib.lattices.TwoDimDenseLattice;
 
 import caLib_abstract.neighbourhood : isNeighbourhood;
-
+import caLib.neighbourhoods.TwoDimMooreNeighbourhood;
 import caLib_util.misc : mod;
 
-
+import std.stdio;
 
 auto create_TwoDimDenseLattice(Ct, Nt)(int width, int height, Nt* neighbourhood)
 if(isNeighbourhood!(Nt, 2))
@@ -237,8 +237,8 @@ public:
         }
         else
         {
-            static assert(0, "TwoDimDenseLattice getNeighbours method dosen't have a \""
-                ~ behaviour ~"\" behaviour");
+            static assert(0, "TwoDimDenseLattice getNeighbours method dosen't" 
+                "have a \"" ~ behaviour ~ "\" behaviour");
         }
     }
 
@@ -251,13 +251,43 @@ public:
 
 
 
-    void iterate(string behaviour)(void delegate(int x, int y) iterator)
+    void iterate(string behaviour)(Ct delegate(Ct cellState, Ct[] neighbours,
+        int x, int y) rule)
     {
-        static if(behaviour == "all")
+        // optimized for moore neighbourhood
+        static if(behaviour == "all" && is(Nt : TwoDimMooreNeighbourhood))
         {
-            for(int row=0; row<height; row++) {
-                for(int col=0; col<width; col++) {
-                    iterator(col, row);
+            Ct[] top = new Ct[3];
+            Ct[] mid = new Ct[2];
+            Ct[] bot = new Ct[3];
+            Ct cellState;
+            
+            foreach(x; 0 .. width)
+            {
+                top[0 .. 3] = getNeighbours(x, 0)[0 .. 3];
+                mid[0 .. 2] = getNeighbours(x, 0)[3 .. 5];
+                bot[0 .. 3] = getNeighbours(x, 0)[5 .. 8];
+                cellState = get(x, 0);
+
+                foreach(y; 0 .. height)
+                {
+                    set(x, y, rule(cellState, top~mid~bot, x, y));
+
+                    top[0 .. 3] = [mid[0], cellState, mid[1]];
+                    mid[0 .. 2] = [bot[0], bot[2]];
+                    cellState = bot[1];
+                    bot[0 .. 3] = [get(x-1, y+2), get(x, y+2), get(x+1, y+2)];
+                }
+            }
+        }
+        // generic
+        else static if(behaviour == "all")
+        {
+            foreach(y; 0 .. height)
+            {
+                foreach(x; 0 .. width)
+                {
+                    set(x, y, rule(get(x, y), getNeighbours(x, y), x, y));
                 }
             }
         }
@@ -272,9 +302,10 @@ public:
 
 
 
-    void iterate(void delegate(int x, int y) iterator)
+    void iterate(Ct delegate(Ct cellState, Ct[] neighbours,
+        int x, int y) rule)
     {
-        iterate!"all"(iterator);
+        iterate!"all"(rule);
     }
 
 
