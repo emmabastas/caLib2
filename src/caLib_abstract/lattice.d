@@ -47,7 +47,8 @@ import caLib_abstract.neighbourhood : isNeighbourhood;
 * `Ct get(string)(Coord)`, `Ct get(Coord)`, $(BR)
 * `void set(string)(Coord, Ct)`, `void set(Coord, Ct)`, $(BR)
 * `Ct[] getNeighbours(string)(Coord)`, `Ct[] getNeighbours(Coord)`, $(BR)
-* `void iterate(string)(void delegate(Coord position))`, `void iterate(void delegate(Coord position))`, $(BR)
+* `void iterate(string)(ubyte delegate(Ct cellState, Ct[] neighbours, Coord c))`,
+* `void iterate(ubyte delegate(Ct cellState, Ct[] neighbours, Coord c))`, $(BR)
 * `void nextGen(string)()`, `void nextGen()`, $(BR)
 * Where `Coord` is an alias for a typetuple containing `int`'s, one `int` for each
 * $(I dimension) (in a 3 dimensional $(B Lattice) `Coord` would be: `(int, int, int)`).
@@ -75,8 +76,10 @@ template isLattice(T, Ct, uint N)
             is(typeof(T.init.set(Coord.init, Ct.init)) : void) &&
             is(typeof(T.init.getNeighbours!"_test"(Coord.init)) : Ct[]) &&
             is(typeof(T.init.getNeighbours(Coord.init)) : Ct[]) &&
-            is(typeof(T.init.iterate!"_test"((Coord c) {})) : void) &&
-            is(typeof(T.init.iterate((Coord c) {})) : void) &&
+            is(typeof(T.init.iterate!"_test"((Ct cellState, Ct[] neighbours, Coord c)
+                { return Ct.init; })) : void) &&
+            is(typeof(T.init.iterate((Ct cellState, Ct[] neighbours, Coord c)
+                { return Ct.init; })) : void) &&
             is(typeof(T.init.nextGen!"_test"()) : void) &&
             is(typeof(T.init.nextGen()) : void);   
     }
