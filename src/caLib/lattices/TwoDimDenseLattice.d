@@ -4,6 +4,9 @@ import caLib_abstract.neighbourhood : isNeighbourhood;
 import caLib.neighbourhoods.TwoDimMooreNeighbourhood;
 import caLib_util.misc : mod;
 
+import std.parallelism : taskPool, totalCPUs;
+import std.range : iota;
+
 import std.stdio;
 
 auto create_TwoDimDenseLattice(Ct, Nt)(int width, int height, Nt* neighbourhood)
@@ -257,26 +260,23 @@ public:
         // optimized for moore neighbourhood
         static if(behaviour == "all" && is(Nt : TwoDimMooreNeighbourhood))
         {
-            Ct[] top = new Ct[3];
-            Ct[] mid = new Ct[2];
-            Ct[] bot = new Ct[3];
+            Ct[] neighbours;
             Ct cellState;
-            
-            foreach(x; 0 .. width)
+            Ct newCellState;
+            foreach (x; 0 .. width)
             {
-                top[0 .. 3] = getNeighbours(x, 0)[0 .. 3];
-                mid[0 .. 2] = getNeighbours(x, 0)[3 .. 5];
-                bot[0 .. 3] = getNeighbours(x, 0)[5 .. 8];
-                cellState = get(x, 0);
-
+                neighbours = getNeighbours(x, 0);
+                cellState = get!"bounded-assumeInBounds"(x, 0);
                 foreach(y; 0 .. height)
                 {
-                    set(x, y, rule(cellState, top~mid~bot, x, y));
+                    set(x, y, rule(cellState, neighbours, x, y));
 
-                    top[0 .. 3] = [mid[0], cellState, mid[1]];
-                    mid[0 .. 2] = [bot[0], bot[2]];
-                    cellState = bot[1];
-                    bot[0 .. 3] = [get(x-1, y+2), get(x, y+2), get(x+1, y+2)];
+                    newCellState = neighbours[6];
+                    neighbours = [
+                        neighbours[3], cellState,   neighbours[4],
+                        neighbours[5],              neighbours[7],
+                        get(x-1, y+2), get(x, y+2), get(x+1, y+2)];
+                    cellState = newCellState;
                 }
             }
         }
