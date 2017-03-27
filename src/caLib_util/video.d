@@ -140,10 +140,12 @@ static this()
 {
 	enum decoderName = [
 		"Windows" : "ffmpeg.exe",
+		"Linux" : "ffmpeg",
 	].get(os, null);
 
 	enum encoderName = [
 		"Windows" : "ffmpeg.exe",
+		"Linux" : "ffmpeg",
 	].get(os, null);
 
 	static assert(decoderName != null && encoderName != null,
