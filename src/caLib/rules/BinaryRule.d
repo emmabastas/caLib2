@@ -70,17 +70,15 @@ public:
 
 	void applyRule()
 	{
-		lattice.iterate((int x, int y)
+		lattice.iterate((ubyte cellState, ubyte[] neighbours, int x, int y)
 		{
-			auto neighbours = lattice.getNeighbours(x, y);
-			
-			uint n = lattice.get(x, y) << neighbours.length;
+			uint n = cellState << neighbours.length;
 			foreach(i; 0 .. neighbours.length)
 			{
 				n += neighbours[i] << i;
 			}
 
-			lattice.set(x, y, ruleSet[n]);
+			return ruleSet[n];
 		});
 
 		lattice.nextGen();

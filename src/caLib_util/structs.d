@@ -7,6 +7,7 @@ module caLib_util.structs;
 import caLib_abstract.lattice : isLattice;
 import caLib_abstract.renderer : isRenderer;
 import caLib_abstract.rule : isRule;
+import std.traits: hasIndirections;
 
 
 
@@ -21,11 +22,13 @@ struct Rect
 
 
 
+///
 auto create_Simulation(Lt, Rt, REt)(Lt* lattice, Rt* rule, REt* renderer)
 {
 	return Simulation!(Lt, Rt, REt)(lattice, rule, renderer);
 }
 
+///
 struct Simulation(Lt, Rt, REt)
 {
 	alias LatticeType = Lt;
