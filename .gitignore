@@ -11,3 +11,4 @@ app.d
 *.dll
 *.a
 *.so
+ca-lib2*
