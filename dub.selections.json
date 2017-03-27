@@ -1,15 +1,8 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"undead": "1.0.6",
 		"derelict-fi": "~FreeImage-3.15.x",
-		"derelict-il": "2.0.0-alpha.1",
-		"pyd": "0.9.9",
 		"derelict-sdl2": "2.0.2",
-		"derelict-util": "2.0.6",
-		"daffodil": "0.1.2",
-		"unit-threaded": "0.6.36",
-		"imaged": "1.0.2",
-		"derelict-gl3": "1.0.21"
+		"derelict-util": "2.0.6"
 	}
 }

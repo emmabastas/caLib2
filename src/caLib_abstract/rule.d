@@ -37,6 +37,22 @@ unittest
     static assert(!isRule!string );
 }
 
+
+
+/// Example of a $(B Rule)
+struct Rule
+{
+    void applyRule() {}
+}
+
+///
+unittest
+{
+    assert(isRule!Rule);
+}
+
+
+
 /**
 * Tests if something is a $(B ReversibleRule), defined as being a $(B Rule) with
 * the additional primitive `applyRuleReverse` 
@@ -64,4 +80,21 @@ unittest
     
     static assert( isRule!A );
     static assert(!isRule!string );
-}   
+}
+
+
+
+/// Example of a $(B ReversibleRule)
+struct ReversibleRule
+{
+    void applyRule() {}
+    void applyRuleReverse() {}
+}
+
+///
+unittest
+{
+    assert( isRule!ReversibleRule);
+    assert( isReversibleRule!ReversibleRule);
+    assert(!isReversibleRule!Rule);
+}

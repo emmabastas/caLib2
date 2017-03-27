@@ -15,13 +15,9 @@ module caLib_abstract.renderer;
 /**
 * Returns `true` if T is a $(B Renderer) defined as having the primitives:
 * `void render()` $(BR)
-* `string[] getScreenshootFormats()`
-* `void screendshot(string path, string format)`
-* `string[] getRecordingFormats()`
-* `void startRecording(string path, string format)`
+* `void screendshot(string path)`
+* `void startRecording(string path)`
 * `void stopRecording()`
-* `void moveViewport(int xDir, int yDir)`
-* `void zoom(int factor)`
 *
 * A $(B Renderer) is the most basic form of a $(RENDERER).
 */
@@ -29,9 +25,7 @@ enum isRenderer(T) =
 	is(typeof(T.init.render()) : void) &&
 	is(typeof(T.init.screenshot("")) : void) &&
 	is(typeof(T.init.startRecording("", uint.init)) : void) &&
-	is(typeof(T.init.stopRecording()) : void) &&
-	is(typeof(T.init.moveViewport(int.init, int.init)) : void) &&
-	is(typeof(T.init.zoom(int.init)) : void);
+	is(typeof(T.init.stopRecording()) : void);
 
 unittest
 {
@@ -40,18 +34,21 @@ unittest
 }
 
 
-version(unittest)
+
+/// Example of a $(B Renderer)
+struct Renderer
 {
-	struct Renderer
-	{
-		void render() {}
+	void render() {}
 
-		void screenshot(string path) {}
-		
-		void startRecording(string path, uint framerate) {}
-		void stopRecording() {}
+	void screenshot(string path) {}
+	
+	void startRecording(string path, uint framerate) {}
+	void stopRecording() {}
+}
 
-		void moveViewport(int xDir, int yDir) {}
-		void zoom(int factor) {}
-	}
+///
+unittest
+{
+	static assert( isRenderer!Renderer);
+	static assert(!isRenderer!string);
 }

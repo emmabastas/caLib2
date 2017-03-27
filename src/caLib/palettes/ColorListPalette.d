@@ -5,6 +5,11 @@ import caLib_util.structs : Color;
 
 
 auto create_ColorListPalette(Ct)(Color[Ct] colors)
+in
+{
+	assert(colors !is null);
+}
+body
 {
 	return create_ColorListPalette!(Ct)(colors, Color.init);
 }
@@ -12,6 +17,11 @@ auto create_ColorListPalette(Ct)(Color[Ct] colors)
 
 
 auto create_ColorListPalette(Ct)(Color[Ct] colors, Color defaultValue)
+in
+{
+	assert(colors !is null);
+}
+body
 {
 	return new ColorListPalette!(Ct)(colors, defaultValue);
 }
@@ -32,6 +42,11 @@ public:
 	alias DisplayValueType = Color;
 
 	this(Color[Ct] colors, Color defaultValue)
+	in
+	{
+		assert(colors !is null);
+	}
+	body
 	{
 		this.colors = colors;
 		this.defaultValue = defaultValue;
@@ -55,8 +70,8 @@ public:
 		}
 		else
 		{
-			static assert(0, "ColorListPalette getDisplayValue method dosen't have a \""
-                ~ behaviour ~"\" behaviour");
+			static assert(0, "ColorListPalette getDisplayValue method dosen't"
+				~ "have a \"" ~ behaviour ~"\" behaviour");
 		}
 	}
 

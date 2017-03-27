@@ -1,11 +1,14 @@
 /**
-* This module is contains utility templates used by the other modules in
-* $(CALIB_ABSTRACT).
+* This module is contains utility templates and functions used by the other
+* modules in  $(CALIB_ABSTRACT).
 *
 * Take a look the various modules in $(CALIB_ABSTRACT) for usage examples.
 */
 
 module caLib_abstract.util;
+
+import std.string : replace, split;
+import std.algorithm.searching : canFind;
 
 
 
@@ -208,4 +211,24 @@ unittest
 
 	static assert( hasNeighbourhoodType!Foo); //but this return true anyways
 	static assert(!hasNeighbourhoodType!int);
+}
+
+
+
+///
+template formatBehaviour(string behaviour)
+{
+	immutable string[] formatBehaviour =
+	(string behaviour){
+		behaviour = behaviour.replace(" ", "");
+
+		string[] behaviourList = behaviour.split("-");
+
+		if(behaviourList.length == 1 && !behaviourList[0].canFind(","))
+			return behaviourList;
+		else if(behaviourList.length == 2)
+			return behaviourList[0] ~ behaviourList[1].split(",");
+		else
+			return null;
+	}(behaviour);
 }

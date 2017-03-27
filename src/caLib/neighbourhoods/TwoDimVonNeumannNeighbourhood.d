@@ -12,8 +12,6 @@ TwoDimVonNeumannNeighbourhood* create_TwoDimVonNeumannNeighbourhood()
 struct TwoDimVonNeumannNeighbourhood
 {
 
-private:
-
 public:
 
 	enum uint Dimension = 2;

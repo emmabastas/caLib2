@@ -1,22 +1,28 @@
 module caLib.simulations.HppLatticeGasSimulation;
 
-import std.algorithm.searching : countUntil;
+import caLib_abstract.lattice;
+import caLib_abstract.neighbourhood : Neighbourhood;
+
 import caLib.lattices.TwoDimDenseLattice;
 import caLib.renderers.TwoDimBasicRenderer;
-import caLib_util.structs : Simulation, create_Simulation;
-import caLib_util.structs : Color;
 
 public import caLib_util.graphics : Window;
-
-import std.stdio;
+import caLib_util.structs : Simulation, create_Simulation;
+import caLib_util.structs : Color;
+import std.algorithm.searching : countUntil;
 
 
 
 auto create_HppLatticeGasSimulation(int width, int height,
 	ubyte delegate(int x, int y) initialCondition, Window window)
+in
+{
+	assert(width > 0 && height > 0);
+}
+body
 {
 	auto lattice = create_TwoDimDenseLattice(width, height,
-		new DummyNeighbourhood(), ubyte(0), initialCondition);
+		new Neighbourhood!2(), ubyte(0), initialCondition);
 
 	auto rule = new HppLatticeGasRule(lattice);
 
@@ -32,9 +38,8 @@ struct HppLatticeGasRule
 
 private:
 
-	alias Lt = TwoDimDenseLattice!(ubyte, DummyNeighbourhood);
+	alias Lt = TwoDimDenseLattice!(ubyte, Neighbourhood!(2));
 
-	Lt* lattice;
 	int latticeWidth;
 	int latticeHeight;
 
@@ -68,6 +73,8 @@ private:
 	}();
 
 public:
+
+	Lt* lattice;
 
 	this(Lt* lattice)
 	{
@@ -124,24 +131,12 @@ private struct HppLatticeGasPalette
 
 
 
-private struct DummyNeighbourhood
-{
-	static immutable int Dimension = 2;
-	int[2][] getNeighboursCoordinates(int x, int y) { return []; }
-}
-
-
-
 version(unittest)
 {
-	import caLib_abstract.neighbourhood : isNeighbourhood;
 	import caLib_abstract.rule : isReversibleRule;
 }
 
-
-
 unittest
 {
-	static assert(isNeighbourhood!(DummyNeighbourhood, 2));
 	static assert(isReversibleRule!(HppLatticeGasRule));
 }

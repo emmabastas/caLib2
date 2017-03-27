@@ -3,9 +3,17 @@ module caLib_util.Controller;
 import caLib_abstract.lattice : isLattice;
 import caLib_abstract.rule : isRule, isReversibleRule;
 import caLib_abstract.renderer : isRenderer;
+import caLib_util.structs : Simulation;
 import derelict.sdl2.sdl;
 import std.stdio: writeln;
 import std.exception : Exception;
+
+
+
+auto create_Controller(Lt, Rt, REt)(Simulation!(Lt, Rt, REt) simulation)
+{
+    return create_Controller(simulation.lattice, simulation.rule, simulation.renderer);
+}
 
 
 

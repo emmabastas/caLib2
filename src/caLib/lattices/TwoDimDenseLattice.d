@@ -1,18 +1,21 @@
 module caLib.lattices.TwoDimDenseLattice;
 
 import caLib_abstract.neighbourhood : isNeighbourhood;
+import caLib_abstract.util : formatBehaviour;
 import caLib.neighbourhoods.TwoDimMooreNeighbourhood;
+
 import caLib_util.misc : mod;
+import std.algorithm.searching : canFind;
 
-import std.parallelism : taskPool, totalCPUs;
-import std.range : iota;
 
-import std.stdio;
 
 auto create_TwoDimDenseLattice(Ct, Nt)(int width, int height, Nt* neighbourhood)
 if(isNeighbourhood!(Nt, 2))
 in
-{ assert(width >= 0 && height >= 0); }
+{
+    assert(width > 0 && height > 0);
+    assert(neighbourhood !is null);
+}
 body
 {
     return create_TwoDimDenseLattice(width, height, neighbourhood, 0, 0);
@@ -24,7 +27,10 @@ auto create_TwoDimDenseLattice(Ct, Nt)(int width, int height, Nt* neighbourhood,
     Ct emptyCellState, Ct initialCondition)
 if(isNeighbourhood!(Nt, 2))
 in
-{ assert(width >= 0 && height >= 0); }
+{
+    assert(width > 0 && height > 0); 
+    assert(neighbourhood !is null);
+}
 body
 {
     return create_TwoDimDenseLattice(width, height, neighbourhood,
@@ -37,7 +43,10 @@ auto create_TwoDimDenseLattice(Ct, Nt)(int width, int height, Nt* neighbourhood,
     Ct emptyCellState, Ct delegate(int x, int y) initialCondition)
 if(isNeighbourhood!(Nt, 2))
 in
-{ assert(width >= 0 && height >= 0); }
+{
+    assert(width > 0 && height > 0);
+    assert(neighbourhood !is null);
+}
 body
 {
     return new TwoDimDenseLattice!(Ct, Nt)(width, height, neighbourhood,
@@ -46,38 +55,8 @@ body
 
 
 
-struct TwoDimDenseLattice(Ct, Nt)
-if(isNeighbourhood!(Nt, 2))
+struct TwoDimDenseLattice(Ct, Nt) if(isNeighbourhood!(Nt, 2))
 {
-    /*
-    * get behaviours
-    *     "torus"
-    *     "bounded"
-    *     "bounded-assumeInBounds"
-    *
-    * set behaviours
-    *     "torus"
-    *     "bounded"
-    *     "bounded-assumeInBounds"
-    *     "instant"
-    *     "instant, torus"
-    *     "instant, bounded"
-    *     "instant, bounded-assumeInBounds"
-    *
-    * getNeighbours behaviours
-    *     "torus"
-    *     "bounded"
-    *     "bounded-assumeInBounds"
-    *
-    * iterate behaviours
-    *     "all"
-    *
-    * nextGen behaviours
-    *     "correct"
-    *     "toggle"
-    *     "flipp"
-    *     "nothing"
-    */
 
 private: 
 
@@ -93,17 +72,17 @@ private:
 
 public: 
 
-
-
     alias CellStateType = Ct;
     alias NeighbourhoodType = Nt;
     enum uint Dimension = 2;
 
-
-
-    this(int width, int height, Nt* neighbourhood, Ct emptyCellState, Ct delegate(int x, int y) initialCondition)
+    this(int width, int height, Nt* neighbourhood, Ct emptyCellState,
+        Ct delegate(int x, int y) initialCondition)
     in
-    { assert(width > 0 && height > 0); }
+    {
+        assert(width > 0 && height > 0);
+        assert(neighbourhood !is null);
+    }
     body
     {
         this.width = width;
@@ -118,8 +97,10 @@ public:
         lattice = &a;
         latticeNextGen = &b;
 
-        for(int row=0; row<height; row++) {
-            for(int col=0; col<width; col++) {
+        foreach(row; 0 .. height)
+        {
+            foreach(col; 0 .. width)
+            {
                 lattice[0][row * width + col] = initialCondition(col, row);
             }
         }
@@ -129,11 +110,18 @@ public:
 
     Ct get(string behaviour)(int x, int y)
     {
-        static if(behaviour == "torus")
+        immutable string[] behaviour = formatBehaviour!behaviour;
+
+        static if(behaviour[0] == "torus")
         {
             return lattice[0].ptr[mod(y, height) * width + mod(x, width)];
         }
-        else static if(behaviour == "bounded")
+        else static if(behaviour[0] == "bounded" 
+            && behaviour.canFind("assumeInBounds"))
+        {
+            return lattice[0].ptr[y * width + x];
+        }
+        else static if(behaviour[0] == "bounded")
         {
             if(x >= 0 && x < width && y >= 0 && y < height)
             {
@@ -144,11 +132,7 @@ public:
                 return emptyCellState;
             }
         }
-        else static if(behaviour == "bounded-assumeInBounds")
-        {
-            return lattice[0].ptr[y * width + x];
-        }
-        else static if(behaviour == "_test")
+        else static if(behaviour[0] == "_test")
         {
             return Ct.init;
         }
@@ -170,41 +154,35 @@ public:
 
     void set(string behaviour)(int x, int y, Ct newValue)
     {
-        static if(behaviour.length >= 9 && behaviour[0 .. 9] == "instant, ")
-        {
-            immutable string behaviour = behaviour[9 .. behaviour.length];
-            alias latticeNextGen = lattice;
-        }
-        else static if(behaviour == "instant")
-        {
-            immutable string behaviour = "bounded";
-            alias latticeNextGen = lattice;
+        immutable string[] behaviour = formatBehaviour!behaviour;
+
+        static if(behaviour.canFind("instant")) {
+            alias latticeToChange = lattice;
+        } else {
+            alias latticeToChange = latticeNextGen;
         }
 
-        static if(behaviour == "torus")
+        static if(behaviour[0] == "torus")
         {
-            latticeNextGen[0].ptr[mod(y, height) * width + mod(x, width)] = newValue;
+            latticeToChange[0].ptr[mod(y, height) * width + mod(x, width)]
+                = newValue;
         }
-        else static if(behaviour == "bounded")
+        else static if(behaviour[0] == "bounded"
+            && behaviour.canFind("assumeInBounds"))
         {
-            if(x >= 0 && x < width && y >= 0 && y < height)
-            {
-                latticeNextGen[0].ptr[y * width + x] = newValue;
-            }
+            latticeToChange[0].ptr[y * width + x] = newValue;
         }
-        else static if(behaviour == "bounded-assumeInBounds")
-        {
-            latticeNextGen[0].ptr[y * width + x] = newValue;
-        }
-        else static if(behaviour == "instant")
+        else static if(behaviour[0] == "bounded")
         {
             if(x >= 0 && x < width && y >= 0 && y < height)
             {
-                lattice[0].ptr[y * width + x] = newValue;
+                latticeToChange[0].ptr[y * width + x] = newValue;
             }
         }
-        else static if(behaviour == "_test")
-        {}
+        else static if(behaviour[0] == "_test")
+        {
+
+        }
         else
         {
             static assert(0, "TwoDimDenseLattice set method dosen't have a \""
@@ -223,18 +201,20 @@ public:
 
     Ct[] getNeighbours(string behaviour)(int x, int y)
     {
-        static if(behaviour == "torus"
-               || behaviour == "bounded"
-               || behaviour == "bounded-assumeInBounds")
+        enum string behaviourString = behaviour;
+        immutable string[] behaviour = formatBehaviour!behaviour;
+
+        static if(behaviour[0] == "torus"
+               || behaviour[0] == "bounded")
         {
             Ct[] neighbours;
             foreach(coord ; neighbourhood.getNeighboursCoordinates(x, y))
             {
-                neighbours ~= [get!behaviour(coord[0], coord[1])];
+                neighbours ~= [get!behaviourString(coord[0], coord[1])];
             }
             return neighbours;
         }
-        else static if(behaviour == "_test")
+        else static if(behaviour[0] == "_test")
         {
             return Ct[].init;
         }
@@ -257,8 +237,10 @@ public:
     void iterate(string behaviour)(Ct delegate(Ct cellState, Ct[] neighbours,
         int x, int y) rule)
     {
+        immutable string[] behaviour = formatBehaviour!behaviour;
+
         // optimized for moore neighbourhood
-        static if(behaviour == "all" && is(Nt : TwoDimMooreNeighbourhood))
+        static if(behaviour[0] == "all" && is(Nt : TwoDimMooreNeighbourhood))
         {
             Ct[] neighbours;
             Ct cellState;
@@ -281,7 +263,7 @@ public:
             }
         }
         // generic
-        else static if(behaviour == "all")
+        else static if(behaviour[0] == "all")
         {
             foreach(y; 0 .. height)
             {
@@ -291,12 +273,14 @@ public:
                 }
             }
         }
-        else static if(behaviour == "_test")
-        {}
+        else static if(behaviour[0] == "_test")
+        {
+
+        }
         else
         {
-            static assert(0, "TwoDimDenseLattice iterate method dosen't have a \""
-                ~ behaviour ~"\" behaviour");
+            static assert(0, "TwoDimDenseLattice iterate method dosen't have a"
+                ~ "\"" ~ behaviour ~"\" behaviour");
         }
     }
 
@@ -312,7 +296,9 @@ public:
 
     void nextGen(string behaviour)()
     {
-        static if(behaviour == "correct")
+        immutable string[] behaviour = formatBehaviour!behaviour;
+
+        static if(behaviour[0] == "correct")
         {
             Ct[]* tmp = lattice;
             lattice = latticeNextGen;
@@ -323,24 +309,24 @@ public:
                 latticeNextGen[0].ptr[i] = emptyCellState;
             }
         }
-        else static if(behaviour == "toggle")
+        else static if(behaviour[0] == "toggle")
         {
             lattice[0] = latticeNextGen[0].dup;
         }
-        else static if(behaviour == "flipp")
+        else static if(behaviour[0] == "flipp")
         {
             Ct[]* tmp = lattice;
             lattice = latticeNextGen;
             latticeNextGen = tmp;
         }
-        else static if(behaviour == "nothing")
+        else static if(behaviour[0] == "nothing")
         {}
-        else static if(behaviour == "_test")
+        else static if(behaviour[0] == "_test")
         {}
         else
         {
-            static assert(0, "TwoDimDenseLattice nextGen method dosen't have a \""
-                ~ behaviour ~"\" behaviour");
+            static assert(0, "TwoDimDenseLattice nextGen method dosen't have a"
+                ~ "\"" ~ behaviour ~"\" behaviour");
         }
     }
 
@@ -349,10 +335,14 @@ public:
         nextGen!"correct"();
     }
 
-    uint[2] getLatticeBounds()
+    int[2] getLatticeBounds()
+    out(result)
+    {
+        assert(result[0] > 0 && result[1] > 0);
+    }
+    body
     {
         return [width, height];
-
     }
 }
 

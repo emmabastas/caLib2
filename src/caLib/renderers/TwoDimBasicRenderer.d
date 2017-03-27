@@ -1,6 +1,6 @@
 module caLib.renderers.TwoDimBasicRenderer;
 
-import caLib_abstract.lattice : isLattice, isAnyLattice, isBoundedLattice;
+import caLib_abstract.lattice : isBoundedLattice, isAnyBoundedLattice;
 import caLib_abstract.palette : isColorPalette, isAnyColorPalette;
 import std.exception : enforce;
 import std.algorithm : canFind;
@@ -16,7 +16,7 @@ public import caLib_util.graphics : Window;
 
 
 template create_TwoDimBasicRenderer(Ct, Lt, Pt)
-if(isLattice!(Lt, Ct, 2) && isColorPalette!(Pt, Ct))
+if(isBoundedLattice!(Lt, Ct, 2) && isColorPalette!(Pt, Ct))
 {
     TwoDimBasicRenderer!(Ct, Lt, Pt)*
     create_TwoDimBasicRenderer(Lt* lattice, Pt* palette, Window window)
@@ -29,7 +29,7 @@ if(isLattice!(Lt, Ct, 2) && isColorPalette!(Pt, Ct))
 
 
 auto create_TwoDimBasicRenderer(Lt, Pt)(Lt* lattice, Pt* palette, Window window)
-if(isAnyLattice!Lt && isAnyColorPalette!Pt && Lt.Dimension == 2)
+if(isAnyBoundedLattice!Lt && isAnyColorPalette!Pt && Lt.Dimension == 2)
 {
     alias Ct = CommonType!(Lt.CellStateType, Pt.CellStateType);
     static assert(!is(Ct == void));
@@ -40,7 +40,7 @@ if(isAnyLattice!Lt && isAnyColorPalette!Pt && Lt.Dimension == 2)
 
 
 struct TwoDimBasicRenderer(Ct, Lt, Pt)
-if(isColorPalette!(Pt, Ct) && isLattice!(Lt, Ct, 2))
+if(isColorPalette!(Pt, Ct) && isBoundedLattice!(Lt, Ct, 2))
 {
 
 private:
@@ -49,10 +49,10 @@ private:
 
     Pt* palette;
 
-    Rect v;
-
     Window window;
     Texture texture;
+    immutable SDL_Rect sRect;
+    immutable SDL_Rect dRect;
 
     bool recording;
     string videoPath;
@@ -67,9 +67,9 @@ public:
 
         this.window = window;
 
-        v = setupViewPort(window, lattice);
-
-        texture = new Texture(window, v.w, v.h);
+        texture = new Texture(window, lattice.getLatticeBounds()[0], lattice.getLatticeBounds()[1]);
+        sRect = SDL_Rect(0, 0, texture.getWidth(), texture.getHeight());
+        dRect = setupDRect();
 
         recording = false;
         videoPath = null;
@@ -82,25 +82,20 @@ public:
             uint* pixels = texture.lock();
             scope(exit) texture.unlock();
 
-            for(int row=v.y; row<v.y + v.h; row++)
+            for(int row=0; row<sRect.h; row++)
             {
-                for(int col=v.x; col<v.x + v.w; col++)
+                for(int col=0; col<sRect.w; col++)
                 {
-                    // TODO if the lattice's get method
-                    //have a "bounded-assumeInBounds" behaviour, use it
-                    pixels[(row-v.y) * texture.getWidth() + (col-v.x)] =
-                        palette.getDisplayValue(lattice.get(col, row));
+                    pixels[row * texture.getWidth() + col] =
+                        palette.getDisplayValue(lattice.get(sRect.x + col, sRect.y + row));
                 }
             }
 
             if(recording)
-                video.addFrame(Image.fromColorValues(pixels, v.w, v.h));
+                video.addFrame(Image.fromColorValues(pixels, sRect.w, sRect.h));
         }
 
-        SDL_Rect srect = {0, 0, texture.getWidth(), texture.getHeight()};
-        SDL_Rect drect = {0, 0, window.getWidth(), window.getHeight()};
-        SDL_RenderCopy(window.getRenderer(), texture.getTexture(), &srect, &drect);
-
+        SDL_RenderCopy(window.getRenderer(), texture.getTexture(), &sRect, &dRect);
         SDL_RenderPresent(window.getRenderer());
     }
 
@@ -109,10 +104,10 @@ public:
     { assert(path !is(null)); }
     body
     {
-        Image image = Image.fromColorValues(texture.lock(), v.w, v.h);
-        image.saveToFile(path);
-
+        Image image = Image.fromColorValues(texture.lock(), sRect.w, sRect.h);
         scope(exit) texture.unlock();
+        
+        image.saveToFile(path);
     }
 
     void startRecording(string path, uint framerate)
@@ -133,36 +128,32 @@ public:
         videoPath = null;
     }
 
-    void moveViewport(int xDir, int yDir){}
-    void zoom(int factor){}
 
 private:
 
-    static Rect setupViewPort(Window window, Lt* lattice)
+    SDL_Rect setupDRect()
     {
-        Rect viewport;
+        SDL_Rect dRect;
 
-        int cellSize = (window.getWidth() + window.getHeight()) / 2 / 10;
+        float ratio = cast(float) (sRect.y + sRect.h) / (sRect.x + sRect.w);
+        float windowRatio = cast(float) (window.getHeight()) / window.getWidth();
 
-        viewport.x = window.getWidth()/cellSize/2 * -1;
-        viewport.y = window.getHeight()/cellSize/2 * -1;
-        viewport.w = window.getWidth()/cellSize;
-        viewport.h = window.getHeight()/cellSize;
-
-        // if the lattice is bounded, set the viewport's size accordingly
-        static if(isBoundedLattice!(Lt, Ct, 2))
+        if(ratio <= windowRatio)
         {
-            int xLength = lattice.getLatticeBounds[0];
-            int yLength = lattice.getLatticeBounds[1];
-            int length = max(xLength, yLength);
-
-            viewport.x = - (length - xLength) / 2;
-            viewport.y = - (length - yLength) / 2;
-            viewport.w = length;
-            viewport.h = length;
+            dRect.x = 0;
+            dRect.w = window.getWidth();
+            dRect.y = cast(int) ((window.getHeight() - window.getWidth() * ratio) / 2);
+            dRect.h = cast(int) (window.getWidth() * ratio);
+        }
+        else
+        {
+            dRect.y = 0;
+            dRect.h = window.getHeight();
+            dRect.x = cast(int) ((window.getWidth() - window.getHeight() * 1/ratio) / 2);
+            dRect.w = cast(int) (window.getHeight() * 1/ratio);
         }
 
-        return viewport;
+        return dRect;
     }
 }
 
@@ -171,7 +162,7 @@ private:
 version(unittest)
 {
     import caLib_abstract.renderer : isRenderer;
-    import caLib_abstract.lattice : Lattice;
+    import caLib_abstract.lattice : BoundedLattice;
     import caLib_abstract.palette : Palette;
 }
 
@@ -180,5 +171,5 @@ version(unittest)
 unittest
 {
     alias Ct = string;
-    assert(isRenderer!(TwoDimBasicRenderer!(Ct, Lattice!(Ct, 2), Palette!(Ct, Color))));
+    assert(isRenderer!(TwoDimBasicRenderer!(Ct, BoundedLattice!(Ct, 2), Palette!(Ct, Color))));
 }

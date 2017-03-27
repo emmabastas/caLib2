@@ -1,11 +1,12 @@
 module caLib.rules.BinaryRule;
 
 import std.math : pow;
+import std.meta : Repeat;
 import std.bigint;
 import std.conv : to;
 import std.array : appender;
 import caLib_abstract.lattice : isAnyLattice;
-import caLib_abstract.neighbourhood : isStaticNeighbourhood;
+import caLib_abstract.neighbourhood : isAnyStaticNeighbourhood;
 
 
 
@@ -27,8 +28,8 @@ body
 
 
 struct BinaryRule(Lt)
-if(isAnyLattice!Lt && Lt.Dimension == 2 && is(Lt.CellStateType : ubyte)
-&& isStaticNeighbourhood!(Lt.NeighbourhoodType, 2) && Lt.NeighbourhoodType.NeighboursAmount+1 < uint.max)
+if(isAnyLattice!Lt && is(Lt.CellStateType : ubyte)
+&& isAnyStaticNeighbourhood!(Lt.NeighbourhoodType) && Lt.NeighbourhoodType.NeighboursAmount+1 < uint.max)
 {
 
 private:
@@ -38,6 +39,8 @@ private:
 	BigInt ruleNumber;
 	ubyte[] ruleSet;
 
+	alias Coord = Repeat!(Lt.Dimension, int);
+
 public:
 
 	enum uint configurations = pow(2, Lt.NeighbourhoodType.NeighboursAmount+1); 
@@ -45,7 +48,7 @@ public:
 
 	this(Lt* lattice, BigInt ruleNumber)
 	in
-	{ assert(ruleNumber <= calculateMaxRuleNumber); }
+	{ assert(ruleNumber <= calculateMaxRuleNumber, "rule number is to big"); }
 	body
 	{
 		this(lattice, createRuleSetFromNumber(ruleNumber));
@@ -70,7 +73,7 @@ public:
 
 	void applyRule()
 	{
-		lattice.iterate((ubyte cellState, ubyte[] neighbours, int x, int y)
+		lattice.iterate((ubyte cellState, ubyte[] neighbours, Coord c)
 		{
 			uint n = cellState << neighbours.length;
 			foreach(i; 0 .. neighbours.length)

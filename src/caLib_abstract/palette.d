@@ -84,8 +84,31 @@ template isAnyPalette(T)
 
 unittest
 {
-	static assert(isAnyPalette!(Palette!(int, uint)));
+	static assert( isAnyPalette!(Palette!(int, uint)));
+	static assert(!isAnyPalette!string); 
 }
+
+
+
+/// Example of a $(B Palette)
+struct Palette(Ct, Dv)
+{	
+	alias CellStateType = Ct;
+	alias DisplayValueType = Dv;
+
+	Dv getDisplayValue(string behaviour)(Ct cellState) { return Dv.init; }
+	Dv getDisplayValue(Ct cellState) { return Dv.init; }
+}
+
+///
+unittest
+{
+	alias palette = Palette!(int, char);
+
+	assert(isPalette!(palette, int, char));
+	assert(isAnyPalette!(palette));
+}
+
 
 
 /**
@@ -131,14 +154,22 @@ unittest
 
 
 
-version(unittest)
-{
-	struct Palette(Ct, Dv)
-	{	
-		alias CellStateType = Ct;
-		alias DisplayValueType = Dv;
+/// Example of a $(B ColorPalette)
+struct ColorPalette(Ct)
+{	
+	alias CellStateType = Ct;
+	alias DisplayValueType = Color;
 
-		Dv getDisplayValue(string behaviour)(Ct cellState) { return Dv.init; }
-		Dv getDisplayValue(Ct cellState) { return Dv.init; }
-	}
+	Color getDisplayValue(string behaviour)(Ct cellState) { return Color(0); }
+	Color getDisplayValue(Ct cellState) { return Color(0); }
+}
+
+///
+unittest
+{
+	alias palette = ColorPalette!(int);
+
+	assert(isPalette!(palette, int, Color));
+	assert(isColorPalette!(palette, int));
+	assert(isAnyColorPalette!(palette));
 }

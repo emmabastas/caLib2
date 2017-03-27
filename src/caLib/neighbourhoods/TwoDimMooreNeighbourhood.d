@@ -12,8 +12,6 @@ TwoDimMooreNeighbourhood* create_TwoDimMooreNeighbourhood()
 struct TwoDimMooreNeighbourhood
 {
 
-private:
-
 public:
 
 	enum uint Dimension = 2;

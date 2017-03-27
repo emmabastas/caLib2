@@ -34,6 +34,7 @@ module caLib_abstract.lattice;
 import std.meta : Repeat;
 import caLib_abstract.util : hasCellStateType, hasDimension, hasNeighbourhoodType;
 import caLib_abstract.neighbourhood : isNeighbourhood;
+import caLib_abstract.neighbourhood : Neighbourhood;
 
 
 
@@ -102,7 +103,7 @@ unittest
 
 
 
-///$(IS_ANY Lattice)
+/// $(IS_ANY Lattice)
 template isAnyLattice(T)
 {
     static if(hasCellStateType!T && hasDimension!T)
@@ -116,6 +117,41 @@ unittest
     static assert( isAnyLattice!(Lattice!(char, 1)));
     static assert( isAnyLattice!(BoundedLattice!(float, 2)));
     static assert(!isAnyLattice!string);
+}
+
+
+
+/// Example of a $(B Lattice)
+struct Lattice(Ct, uint N, neighbourhood=Neighbourhood!N)
+if(isNeighbourhood!(neighbourhood, N))
+{
+    alias CellStateType = Ct;
+    alias NeighbourhoodType = neighbourhood;
+    enum uint Dimension = N;
+
+    alias Coord = Repeat!(N, int);
+
+    Ct get(string s)(Coord) { return Ct.init; }
+    Ct get(Coord) { return Ct.init; }
+
+    void set(string s)(Coord, Ct) {}
+    void set(Coord, Ct) {}
+
+    Ct[] getNeighbours(string s)(Coord) { return new Ct[0]; }
+    Ct[] getNeighbours(Coord) { return new Ct[0]; }
+
+    void iterate(string s)(Ct delegate(Ct, Ct[], Coord)) {}
+    void iterate(Ct delegate(Ct, Ct[], Coord)) {}
+
+    void nextGen(string s)() {}
+    void nextGen() {}
+}
+
+///
+unittest
+{
+    static assert(isLattice!(Lattice!(int, 2), int, 2));
+    static assert(isAnyLattice!(Lattice!(char, 3)));
 }
 
 
@@ -144,7 +180,7 @@ template isBoundedLattice(T, Ct, uint N)
 
     enum isBoundedLattice =
         isLattice!(T, Ct, N) &&
-        is(typeof(T.init.getLatticeBounds()) : uint[N]);
+        is(typeof(T.init.getLatticeBounds()) : int[N]);
 }
 
 unittest
@@ -180,44 +216,22 @@ unittest
 
 
 
-version(unittest)
+/// Example of a $(B BoundedLattice)
+struct BoundedLattice(Ct, uint N)
 {
-    import caLib_abstract.neighbourhood : Neighbourhood;
+    Lattice!(Ct, N) lattice;
+    alias lattice this;
 
-    struct Lattice(Ct, uint N, neighbourhood=Neighbourhood!N)
-    if(isNeighbourhood!(neighbourhood, N))
-    {
-        alias CellStateType = Ct;
-        alias NeighbourhoodType = neighbourhood;
-        enum uint Dimension = N;
-
-        alias Coord = Repeat!(N, int);
-
-        Ct get(string s)(Coord) { return Ct.init; }
-        Ct get(Coord) { return Ct.init; }
-
-        void set(string s)(Coord, Ct) {}
-        void set(Coord, Ct) {}
-
-        Ct[] getNeighbours(string s)(Coord) { return new Ct[0]; }
-        Ct[] getNeighbours(Coord) { return new Ct[0]; }
-
-        void iterate(string s)(void delegate(Coord)) {}
-        void iterate(void delegate(Coord)) {}
-
-        void nextGen(string s)() {}
-        void nextGen() {}
+    int[N] getLatticeBounds() {
+        // "return int[N]"" makes compiler think
+        // "int[N]" is a call to "opIndex"
+        int[N] a; return a.init;
     }
+}
 
-    struct BoundedLattice(Ct, uint N)
-    {
-        Lattice!(Ct, N) lattice;
-        alias lattice this;
-
-        uint[N] getLatticeBounds() {
-            // "return uint[N]"" makes compiler think
-            // "uint[N]" is a call to "opIndex"
-            uint[N] a; return a.init;
-        }
-    }
+///
+unittest
+{
+    static assert(isBoundedLattice!(BoundedLattice!(int, 3), int, 3));
+    static assert(isAnyLattice!(BoundedLattice!(char, 7)));
 }

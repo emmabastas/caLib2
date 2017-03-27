@@ -85,7 +85,6 @@ unittest
 	static assert( isNeighbourhood!(Neighbourhood!(1), 1));
 	static assert( isNeighbourhood!(Neighbourhood!(2), 2));
 	static assert( isNeighbourhood!(Neighbourhood!(3), 3));
-
 	static assert(!isNeighbourhood!(Neighbourhood!(3), 2));
 }
 
@@ -120,6 +119,25 @@ unittest
 	static assert( isAnyNeighbourhood!(Neighbourhood!(1)));
     static assert( isAnyNeighbourhood!(StaticNeighbourhood!(2)));
     static assert(!isAnyNeighbourhood!string);
+}
+
+
+
+/// Example of a $(B Neighbourhood)
+struct Neighbourhood(uint N)
+{
+	enum uint Dimension = N;
+
+	alias Coord = Repeat!(N, int);
+
+	int[N][] getNeighboursCoordinates(Coord) { int[N][]a; return a.init; }
+}
+
+///
+unittest
+{
+	static assert(isNeighbourhood!(Neighbourhood!(2), 2));
+	static assert(isAnyNeighbourhood!(Neighbourhood!(4)));
 }
 
 
@@ -213,32 +231,19 @@ unittest
 
 
 
-version(unittest)
+/// Example of a  $(B StaticNeighbourhood)
+struct StaticNeighbourhood(uint N)
 {
-	struct Neighbourhood(uint N)
-	{
-		enum uint Dimension = N;
+	Neighbourhood!N neighbourhood;
+	alias neighbourhood this;
 
-		alias Coord = Repeat!(N, int);
+	enum uint NeighboursAmount = 0;
+}
 
-		int[N][] getNeighboursCoordinates(Coord) { int[N][]a; return a.init; }
-	}
-
-	struct StaticNeighbourhood(uint N)
-	{
-		Neighbourhood!N neighbourhood;
-		alias neighbourhood this;
-
-		enum uint NeighboursAmount = 0;
-	}
-
-	struct BlockNeighbourhood(uint N)
-	{
-		alias Coord = Repeat!(N, int);
-
-		Neighbourhood!N neighbourhood;
-		alias neighbourhood this;
-
-		int[N][] getBlockCoordinates(Coord) { int[N][]a; return a.init; }
-	}
+///
+unittest
+{
+	static assert(isNeighbourhood!(StaticNeighbourhood!(2), 2));
+	static assert(isStaticNeighbourhood!(StaticNeighbourhood!(2), 2));
+	static assert(isAnyStaticNeighbourhood!(StaticNeighbourhood!(2)));
 }
