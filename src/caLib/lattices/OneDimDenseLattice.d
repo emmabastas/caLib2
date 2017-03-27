@@ -214,7 +214,7 @@ public:
         else
         {
             static assert(0, "OneDimDenseLattice getNeighbours method dosen't" 
-                "have a \"" ~ behaviour ~ "\" behaviour");
+                ~ "have a \"" ~ behaviour ~ "\" behaviour");
         }
     }
 
