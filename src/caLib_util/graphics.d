@@ -8,7 +8,8 @@
 module caLib_util.graphics;
 
 import std.stdio : writeln;
-import std.file : thisExePath;
+import std.file : thisExePath, getcwd, exists, isFile;
+import std.path : buildNormalizedPath;
 import std.exception : enforce;
 import std.conv : to;
 import caLib_util.build : arch, os;
@@ -19,7 +20,36 @@ public import derelict.sdl2.sdl;
 
 shared static this()
 {
+    // Derelict dosen't check some of the directories for SDL
+    // do it explicitly instead
+    static if(os == "Linux")
+    {
+        string path;
+
+        // look for sdl in the same directory as the executable
+        path = buildNormalizedPath(thisExePath(), "../libSDL2.so");
+        if(exists(path) && isFile(path))
+        {
+            DerelictSDL2.load(path);
+            return;
+        }
+
+        // look for sdl in the working directory
+        path = buildNormalizedPath(getcwd(), "libSDL2.so");
+        if(exists(path) && isFile(path))
+        {
+            DerelictSDL2.load(path);
+        }
+
+        // meybe look in the PATH also? I trust Derelict to do that but i dunno
+
+        // now sdl can look elsware
         DerelictSDL2.load();
+    }
+    else
+    {
+        DerelictSDL2.load();
+    }
 }
 
 
