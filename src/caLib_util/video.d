@@ -1,8 +1,8 @@
 module caLib_util.video;
 
 import std.process : execute, executeShell;
-import std.file : mkdirRecurse, rmdir, remove, exists, write, rename, getcwd, thisExePath;
-import std.path : buildPath;
+import std.file : mkdirRecurse, rmdir, remove, exists, write, rename, getcwd, thisExePath, isFile;
+import std.path : buildNormalizedPath;
 import std.exception : enforce;
 import std.conv : to;
 import std.string : split;
@@ -140,33 +140,58 @@ static this()
 {
 	enum decoderName = [
 		"Windows" : "ffmpeg.exe",
+		"Linux" : "ffmpeg",
 	].get(os, null);
 
 	enum encoderName = [
 		"Windows" : "ffmpeg.exe",
+		"Linux" : "ffmpeg",
 	].get(os, null);
 
 	static assert(decoderName != null && encoderName != null,
         "can't compile video.d becuase codec usage is not yet"
         ~ " implemented for " ~ os);
 
-	if(exists(buildPath(thisExePath(), decoderName)))
-		decoderPath = buildPath(thisExePath(), decoderName);
-	else if(exists(buildPath(getcwd(), decoderName)))
-		decoderPath = buildPath(getcwd(), decoderName);
-	else
-		decoderPath = findInPATH(decoderName);
+	string path;
 
-	if(exists(buildPath(thisExePath(), encoderName)))
-		encoderPath = buildPath(thisExePath(), encoderName);
-	else if(exists(buildPath(getcwd(), encoderName)))
-		encoderPath = buildPath(getcwd(), encoderName);
-	else
-		encoderPath = findInPATH(decoderName);
+	// look for decoder
+
+	// look in path
+	path = findInPATH(decoderName);
+	if(exists(path) && isFile(path))
+		decoderPath = path;
+
+	// look in the working directory
+	path = buildNormalizedPath(getcwd(), decoderName);
+	if(exists(path) && isFile(path))
+		decoderPath = path;
+
+	// look in the same directory as the executable
+	path = buildNormalizedPath(thisExePath(), "..", decoderName);
+	if(exists(path) && isFile(path))
+		decoderPath = path;
+
+
+	// look for encoder
+
+	// look in path
+	path = findInPATH(encoderName);
+	if(exists(path) && isFile(path))
+		encoderPath = path;
+
+	// look in the working directory
+	path = buildNormalizedPath(getcwd(), encoderName);
+	if(exists(path) && isFile(path))
+		encoderPath = path;
+
+	// look in the same directory as the executable
+	path = buildNormalizedPath(thisExePath(), "..", encoderName);
+	if(exists(path) && isFile(path))
+		encoderPath = path;
 
 	enforce(decoderPath != null && encoderPath != null,
 		encoderName ~ " and/or " ~ decoderName ~ ", wich is "
-		~ "essential for creating video could not be found on the PATH");
+		~ "essential for creating video could not be found");
 }
 
 

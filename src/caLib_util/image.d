@@ -1,7 +1,8 @@
 module caLib_util.image;
 
 import std.exception : Exception, enforce;
-import std.file : thisExePath;
+import std.file : thisExePath, getcwd, exists, isFile;
+import std.path : buildNormalizedPath;
 import std.stdio : writeln;
 import std.conv : to;
 import std.string : split;
@@ -15,7 +16,36 @@ public import caLib_util.structs : Color;
 
 shared static this()
 {
-	DerelictFI.load();
+	// Derelict dosen't check some of the directories for FreeImage
+    // do it explicitly instead
+    static if(os == "Linux")
+    {
+        string path;
+
+        // look for FreeImage in the same directory as the executable
+        path = buildNormalizedPath(thisExePath(), "../libfreeimage.so");
+        if(exists(path) && isFile(path))
+        {
+            DerelictFI.load(path);
+            return;
+        }
+
+        // look for FreeImage in the working directory
+        path = buildNormalizedPath(getcwd(), "libfreeimage.so");
+        if(exists(path) && isFile(path))
+        {
+            DerelictFI.load(path);
+        }
+
+        // meybe look in the PATH also? I trust Derelict to do that but i dunno
+
+        // now FreeImage can look elsware
+        DerelictFI.load();
+    }
+    else
+    {
+        DerelictFI.load();
+    }
 
     FreeImage_SetOutputMessage(&FreeImageErrorHandler);
 }
