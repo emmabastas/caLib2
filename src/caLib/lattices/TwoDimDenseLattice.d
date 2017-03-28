@@ -221,7 +221,7 @@ public:
         else
         {
             static assert(0, "TwoDimDenseLattice getNeighbours method dosen't" 
-                "have a \"" ~ behaviour ~ "\" behaviour");
+                ~ "have a \"" ~ behaviour ~ "\" behaviour");
         }
     }
 
