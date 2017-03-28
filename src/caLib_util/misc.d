@@ -23,7 +23,12 @@ string findInPATH(string fileName)
 {
 	string filePath = null;
 
-	foreach(path ; environment.get("PATH").split(';'))
+	static if(os == "Windows")
+		string[] envPath = environment.get("PATH").split(";");
+	else
+		string[] envPath = environment.get("PATH").split(":");
+
+	foreach(path ; envPath)
 	{
 		string temp = path ~ "/" ~ fileName;
 		if(exists(temp) && isFile(temp))
