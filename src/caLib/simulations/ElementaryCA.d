@@ -40,7 +40,7 @@ body
 ubyte wolframRuleNumberToRuleNumber(ubyte ruleNumber)
 {
 	ruleNumber =
-		((ruleNumber & 0) << 0) +
+		((ruleNumber & 1) << 0) +
 		((ruleNumber & 2) << 3) +
 		((ruleNumber & 4) << 0) +
 		((ruleNumber & 8) << 3) +
@@ -50,7 +50,7 @@ ubyte wolframRuleNumberToRuleNumber(ubyte ruleNumber)
 		((ruleNumber & 128) >> 0);
 
 	ruleNumber =
-		((ruleNumber & 0) << 0) +
+		((ruleNumber & 1) << 0) +
 		((ruleNumber & 2) << 0) +
 		((ruleNumber & 4) << 2) +
 		((ruleNumber & 8) << 2) +
