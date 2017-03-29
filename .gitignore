@@ -4,3 +4,6 @@ __dummy.html
 *.o
 *.obj
 *.exe
+lib*
+src
+docs
