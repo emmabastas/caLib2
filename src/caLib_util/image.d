@@ -3,7 +3,7 @@ module caLib_util.image;
 import std.exception : Exception, enforce;
 import std.file : thisExePath, getcwd, exists, isFile;
 import std.path : buildNormalizedPath;
-import std.stdio : writeln;
+import std.stdio : write;
 import std.conv : to;
 import std.string : split;
 import core.stdc.stdlib : exit;
@@ -271,7 +271,12 @@ extern (C) void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const(char)* messag
 {
 	try
 	{
-		writeln("FreeImage error:", message);
+		while (*message != '\0')
+		{
+			write(*message);
+		    message++;
+		}
+		write('\n');
 	}
 	catch(Exception e)
 	{
