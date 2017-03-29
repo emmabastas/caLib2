@@ -166,8 +166,8 @@ public:
 
 	void saveToFile(string path)
 	{
-		enforce(path[path.length-1] != '.',
-				"Error. Can't save as image. invalid path: \"" ~ path ~ "\"");
+		// add string terminator. This becomes essential when converting the char*
+		path ~= '\0';
 
 		FREE_IMAGE_FORMAT format =
 			FreeImage_GetFIFFromFilename(cast(const char*) path);
