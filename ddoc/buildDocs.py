@@ -33,6 +33,11 @@ importPaths = [
 	'../../../.dub/packages/derelict-util-2.0.6/source/',
 	'../../../.dub/packages/imaged-1.0.2/',
 	'../../../.dub/packages/undead-1.0.6/src/',
+	'../../../.dub/packages/derelict-fi-FreeImage-3.15.x/derelict-fi/source/',
+	'../../../.dub/packages/derelict-util-2.0.6/derelict-util/source/',
+	'../../../.dub/packages/derelict-sdl2-2.0.2/derelict-sdl2/source/',
+	'/usr/include/dmd/phobos',
+	'/usr/include/dmd/druntime/import',
 ] + dsourcePaths
 
 includedFiles = [
