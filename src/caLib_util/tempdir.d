@@ -3,7 +3,7 @@ module caLib_util.tempdir;
 import std.file : tempDir, mkdirRecurse, rmdirRecurse, exists, dirEntries, SpanMode, FileException;
 import std.random : uniform;
 import std.conv : to;
-import std.path : absolutePath;
+import std.path : buildNormalizedPath;
 import std.exception : enforce;
 
 
@@ -30,14 +30,19 @@ string makePrivateTempDir() { return makePrivateTempDir(0); }
 
 string makePrivateTempDir(int n)
 {
+	// we will only try to make a temporary directory 1000 times
 	enforce(n < 1000,
 		"Could not create a temporary directory");
 
-	string dir = tempDirsRoot ~ "caLib3_" ~ to!string(uniform(1000, 9999));
+	// the new temporary directory
+	string dir = buildNormalizedPath(tempDirsRoot, "caLib3_",
+		to!string(uniform(1000, 9999)));
 
+	// if it already exists, try again
 	if(exists(dir))
-		return makePrivateTempDir();
+		return makePrivateTempDir(n+1);
 
+	// otherwise, make the directory and return the path to it
 	mkdirRecurse(dir);
 	return dir;
 }
