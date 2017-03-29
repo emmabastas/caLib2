@@ -66,4 +66,8 @@ private void removeTempFiles()
 
 
 
-private string makeTempDirsRoot() { return null; }
+private string makeTempDirsRoot()
+{
+	assert(0, "Can't create temporary file:" ~
+		"This os has no location for temporary files");
+}
